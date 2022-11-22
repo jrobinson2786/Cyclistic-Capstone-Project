@@ -1,0 +1,221 @@
+-------------------------------------------------------------------
+------------------------------Analysis-----------------------------
+-------------------------------------------------------------------
+
+------- What is the new total number of rides compared to the old?
+SELECT 
+  COUNT(ride_id)
+FROM cyclistic_capstone.trips_clean_final;
+/*
+The initial count was 5,755,694
+The cleaned count is 5,275,855
+a total of 479,839 rows were removed
+*/
+
+------- What is the total number of casual riders 
+------- and the total number of members? 
+
+SELECT 
+  COUNT(*) AS num_casual_riders,
+  ROUND((COUNT(*) / 5275855)*100, 2) AS casual_percent  
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  member_casual = 'casual';
+
+SELECT 
+  COUNT(*) AS num_casual_riders,
+  ROUND((COUNT(*) / 5275855)*100, 2) AS casual_percent  
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  member_casual = 'member';
+/*
+the total number of casual riders was: 2,140,420
+or 40.57%
+the total number of member riders was: 3,135,435
+or 59.43%
+*/
+
+
+------- What percentage of the total rides was docked_type and e_type?
+SELECT 
+  COUNT(*) AS num_docked_type,
+  ROUND((COUNT(*) / 5275855)*100, 2) AS docked_type_percent
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  rideable_type = 'classic_bike' OR
+  rideable_type = 'docked_bike';
+
+SELECT 
+  COUNT(*) AS num_e_type,
+  ROUND((COUNT(*) / 5275855)*100, 2) AS e_type_percent
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  rideable_type = 'electric_bike';
+
+/*
+- the total number of docked_type rides was: 2,813,234 
+or 53.32% of the rides for the past year 
+- the total number of electric_bike rides was: 2,462,621 
+or 46.68% of the total rides for the past year
+*/
+
+
+------- What is the average total ride time and use as a baseline to compare tide_types? 
+SELECT 
+  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
+FROM cyclistic_capstone.trips_clean_final;
+--avg total ride_time is: 16.8 minutes
+
+SELECT 
+  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  rideable_type = 'docked_bike' OR
+  rideable_type = 'classic_bike';
+-- avg ride time for docked_type is: 19.3 minutes
+
+SELECT 
+  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  rideable_type = 'electric_bike';
+-- avg ride time for e_type is: 13.8 minutes
+
+/*
+customers appear to be spending more time overall on docked_type bikes than e_type
+*/
+
+------- Which customers prefer e_type and which prefer docked_type? 
+SELECT 
+  member_casual,
+  rideable_type,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/5275855*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+GROUP BY 
+  member_casual,
+  rideable_type;
+/*
+casual members appear to be indifferent between docked_type and e_type
+In general, riders appear to prefer the docked_type bikes over the electric_type.
+*/
+
+---------------------------------------------------------------------------------
+
+------- What is the weekly breakdown between members and casual riders? 
+
+-- Where the total rides was: 5,275,855
+SELECT 
+  day_of_week,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/5275855*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+GROUP BY 
+  day_of_week
+ORDER BY 
+  ROUND((COUNT(ride_id)/5275855*100), 2) DESC;
+/*
+total ridership is fairly consistent throughout the week 
+although Wednesday - Saturday appear to be slightly more busy. 
+*/
+
+
+-- Where the total member rides was: 3,135,435
+SELECT 
+  day_of_week,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/3135435*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+WHERE member_casual = 'member'
+GROUP BY 
+  day_of_week
+ORDER BY 
+  ROUND((COUNT(ride_id)/3135435*100), 2) DESC;
+
+SELECT 
+  day_of_week,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/2140420*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+WHERE member_casual = 'casual'
+GROUP BY 
+  day_of_week
+ORDER BY 
+  ROUND((COUNT(ride_id)/2140420*100), 2) DESC;
+
+/*
+- The busiest days for casual riders is Friday, Saturday, & Sunday
+- The busiest days for members is Monday - Thursday but member ridership remains 
+fairly consistent throughout the week. 
+*/
+
+------- what is the monthly breakdown for casual riders? 
+SELECT 
+  month,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/2140420*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+WHERE member_casual = 'casual'
+GROUP BY 
+  month
+ORDER BY 
+  ROUND((COUNT(ride_id)/2140420*100), 2) DESC;
+
+SELECT 
+  month,
+  COUNT(ride_id) AS total_count,
+  ROUND((COUNT(ride_id)/3135435*100), 2) AS percentage
+FROM cyclistic_capstone.trips_clean_final
+WHERE member_casual = 'casual'
+GROUP BY 
+  month
+ORDER BY 
+  ROUND((COUNT(ride_id)/3135435*100), 2) DESC;
+
+/*
+The most active months for members are May - September
+The most active months for casual riders are also May - September
+ie: ridership in general tends to be higher during the summer time
+*/
+
+------- Which start/end stations are the most common for casual riders? 
+SELECT 
+  start_station_name AS most_common_starting_point,
+  COUNT(ride_id) AS ride_count
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  member_casual = 'casual' AND
+  start_station_name IS NOT NULL
+GROUP BY start_station_name
+ORDER BY COUNT(ride_id) DESC
+LIMIT 15;
+
+SELECT 
+  end_station_name AS most_common_destinations,
+  COUNT(ride_id) AS ride_count
+FROM cyclistic_capstone.trips_clean_final
+WHERE 
+  member_casual = 'casual' AND
+  end_station_name IS NOT NULL
+GROUP BY end_station_name
+ORDER BY COUNT(ride_id) DESC
+LIMIT 15;
+
+/*
+The top 15 common start/end locations for casual riders are: 
+1. Streeter Dr. & Grand Ave.
+2. Dusable Lake Shore Dr. & Monroe St.
+3. Millenium Park
+4. Michigan Ave & Oak Street
+5. Dusable Lake Shore Dr & North Blvd. 
+6. Shedd Acquarium
+7. Wells St. & Concord
+8. Theater on The Lake
+9. Dusable Harbor 
+10. Clark St. & Armitage Ave. 
+11. Indiana Ave & Roosavelt Road
+12. Clark St. & Lincoln Ave. 
+13. Clark St. & Elm
+14. Wells St. & Elm 
+15. Montrose Harbor
+*/
