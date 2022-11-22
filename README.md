@@ -10,6 +10,7 @@ It has been determined by the financial analytics deparment that annual members 
 
 ## Additional Information: 
 * Full project and portfolio coming soon... 
+* Here is a [link](https://public.tableau.com/app/profile/jack.robinson5140) to my Tableau Public Profile!!!
 
 
 
