@@ -6,7 +6,7 @@ This is the coding portion of the capstone project for the Google - Data Analyti
 Cyclistic is a Chicago-based bike share company which launched its initial bike-share offering in 2016.
 
 ## Business Objective: 
-It has been determined by the financial analytics team that annual members are more profitable for the long-term than casual riders. It follows that my task for this project, as the newest member of the marketing team, is to analyze bike-ride data to determine the key differences between casual riders (ie: riders that use Cyclistic bikes on a pay-per-ride basis) and annual members. The purpose of the analysis is ultimately to provide insight toward Cyclistic's next marketing campain aimed at the conversion of casual riders to annual members.   
+It has been determined by the financial analytics team that annual members are more profitable for the long-term than casual riders. It follows that my task for this project, as the newest member of the marketing team, is to analyze bike-ride data to determine the key differences between casual riders (ie: riders that use Cyclistic bikes on a pay-per-ride basis) and annual members. The purpose of the analysis is ultimately to provide insight toward Cyclistic's next marketing campain aimed at the conversion of casual riders to annual members. 
 
 ## Additional Information: 
 * Here is a [link](https://public.tableau.com/app/profile/jack.robinson5140) to my Tableau Public Profile!!!
