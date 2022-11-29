@@ -3,26 +3,18 @@
 ----------------------------------------------------------------------
 
 ------- 1. isolate electric_bike rides from master set. 
-
-CREATE TABLE cyclistic_capstone.electric_rides
-AS(
-  SELECT * 
-  FROM cyclistic_capstone.trips_compl
-  WHERE rideable_type = 'electric_bike'
-);
-
-------- double check electric_bike rides table
+CREATE TABLE cyclistic_capstone.trips_clean_final AS
+WITH electric_bikes AS
+(
 SELECT * 
-FROM cyclistic_capstone.electric_rides
-LIMIT 150;
-
-
-
-------- 2. clean nulls
-CREATE TABLE cyclistic_capstone.clean_prelim
-AS(
+FROM cyclistic_capstone.trips_compl
+WHERE rideable_type = 'electric_bike'
+),
+------- 2. clean nulls from bike types that are NOT electric bikes
+other_bikes AS 
+(
   SELECT * 
-  FROM cyclistic_capstone.trips_compl
+  FROM cyclistic_capstone.trips_compl 
   WHERE 
     rideable_type <> 'electric_bike' AND 
     start_station_name IS NOT NULL AND 
@@ -33,37 +25,18 @@ AS(
     end_lat IS NOT NULL AND 
     start_lng IS NOT NULL AND 
     end_lng IS NOT NULL
-);
-
-------- double check preliminary cleaning table
-
-SELECT * 
-FROM cyclistic_capstone.clean_prelim
-LIMIT 150;
-
-
-
-
-------- 3. reintegrate electric rides. 
-CREATE TABLE cyclistic_capstone.total_clean
-AS(
+),
+------- 3. reintegrate ALL bike types. 
+reintegrated_rides AS 
+(
   SELECT * 
-  FROM cyclistic_capstone.clean_prelim
+  FROM electric_bikes 
   UNION ALL 
 
   SELECT * 
-  FROM cyclistic_capstone.electric_rides
-);
-
-------- double check total clean
-SELECT * 
-FROM cyclistic_capstone.total_clean
-ORDER BY ride_id
-LIMIT 200; 
-
-------- create clean_master_table with transformations. 
-CREATE TABLE cyclistic_capstone.trips_clean_final
-AS(
+  FROM other_bikes
+)
+------- 4. create clean_master_table with transformations. 
   SELECT 
     ride_id, 
     rideable_type,
@@ -103,29 +76,16 @@ AS(
     end_lat,
     end_lng,
     member_casual
-FROM cyclistic_capstone.total_clean 
+FROM reintegrated_rides 
 WHERE 
+  LENGTH(ride_id) = 16 AND
   TIMESTAMP_DIFF(ended_at, started_at, MINUTE) BETWEEN 1 AND 1440 AND                          
-  start_station_name <> 'Base - 2132 W Hubbard' OR
+  start_station_name <> 'Base - 2132 W Hubbard' OR  
   start_station_name <> 'Base - 2132 W Hubbard Warehouse' OR
   start_station_name <> 'DIVVY CASSETTE REPAIR MOBILE STATION' OR
   end_station_name <> 'Base - 2132 W Hubbard' OR
   end_station_name <> 'Base - 2132 W Hubbard Warehouse' OR
   end_station_name <> 'DIVVY CASSETTE REPAIR MOBILE STATION' OR
   start_station_id <> 'DIVVY 001 - Warehouse test station' OR
-  end_station_id <> 'DIVVY 001 - Warehouse test station'
-);
+  end_station_id <> 'DIVVY 001 - Warehouse test station';
 
-------- Double check data. 
-SELECT * 
-FROM cyclistic_capstone.trips_clean_final
-ORDER BY ride_id
-
-SELECT 
-  COUNT(*)
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  rideable_type = 'electric_bike'
-  
-  
-  
