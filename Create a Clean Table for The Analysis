@@ -1,15 +1,10 @@
+
 CREATE TABLE cyclistic_capstone.clean_trips AS(
--- 1. Identify the values that I want to exclude entirely 
-WITH kept_values AS(
-  SELECT *
+-- Step 1. exclude items that are universally unwanted
+WITH initial_exclusions AS(
+  SELECT * 
   FROM cyclistic_capstone.trips_compl 
-  WHERE 
-    LENGTH(ride_id) = 16 AND
-    TIMESTAMP_DIFF(ended_at, started_at, MINUTE) BETWEEN 1 AND 1440 AND      
-    start_lat IS NOT NULL OR
-    end_lat IS NOT NULL AND
-    start_lng IS NOT NULL OR
-    end_lng IS NOT NULL AND                    
+  WHERE
     start_station_name <> 'Base - 2132 W Hubbard' OR
     start_station_name <> 'Base - 2132 W Hubbard Warehouse' OR        
     start_station_name <> 'DIVVY CASSETTE REPAIR MOBILE STATION' OR   
@@ -19,38 +14,37 @@ WITH kept_values AS(
     start_station_id <> 'DIVVY 001 - Warehouse test station' OR
     end_station_id <> 'DIVVY 001 - Warehouse test station'
 ),
--- 2. isolate and exclude NULL values from non-electric bikes.
-null_values AS(
-  SELECT ride_id AS null_rows
-  FROM(
-    SELECT -- select the columns that you want to clean in the subquery 
-      ride_id,
-      start_station_name, 
-      end_station_name, 
-      start_station_id, 
-      end_station_id
-    FROM cyclistic_capstone.trips_compl
+-- Step 2. isolate null values to be excluded
+excluded_nulls AS(
+    SELECT ride_id AS null_id
+    FROM (SELECT 
+          ride_id, 
+          start_station_name, 
+          start_station_id, 
+          end_station_name, 
+          end_station_id
+        FROM initial_exclusions  
+        WHERE rideable_type = 'docked_bike' OR 
+        rideable_type = 'classic_bike'
+        )
     WHERE 
-      rideable_type = 'docked_bike' OR
-      rideable_type = 'classic_bike'
-    )
-  WHERE 
-    start_station_name IS NOT NULL AND 
-    start_station_id IS NOT NULL AND 
-    end_station_name IS NOT NULL AND 
-    end_station_id IS NOT NULL   
+      start_station_name IS NULL AND 
+      start_station_id IS NULL OR
+      end_station_name IS NULL AND 
+      end_station_id IS NULL
 ),
--- 3. remove null values where rideable_type = docked | classic. 
+-- Step 3. reintegrate cleaned NULL values.
 recombined_data AS(
-  SELECT * 
-  FROM cyclistic_capstone.trips_compl tc
-  LEFT JOIN null_values nv
-  ON tc.ride_id = nv.null_rows
+   SELECT *
+   FROM initial_exclusions ie
+   LEFT JOIN excluded_nulls en
+   ON ie.ride_id = en.null_id 
+   WHERE en.null_id IS NULL
 )
--- 4. transform cleaned data. 
+-- Step 4. final data transformation. 
   SELECT 
     ride_id, 
-    rideable_type,
+    rideable_type AS bike_type,
     CAST(started_at AS date) AS date,
     CAST(started_at AS time) AS started_at,
     CAST(ended_at AS time) AS ended_at,
@@ -86,7 +80,8 @@ recombined_data AS(
     start_lng,
     end_lat,
     end_lng,
-    member_casual
+    member_casual AS user_type
 FROM recombined_data 
-);
-
+WHERE 
+  TIMESTAMP_DIFF(ended_at, started_at, MINUTE) BETWEEN 1 AND 1440
+)
