@@ -1,208 +1,167 @@
--------------------------------------------------------------------
 ------------------------------Analysis-----------------------------
--------------------------------------------------------------------
 
 ------- What is the new total number of rides compared to the old?
 SELECT 
-  COUNT(ride_id)
-FROM cyclistic_capstone.trips_clean_final;
-/*
-The initial count was 5,755,694
-The cleaned count is 5,275,855
-a total of 479,839 rows were removed
-*/
+  COUNT(ride_id) AS total_rides
+FROM cyclistic_capstone.clean_trips; 
+-- post-clean total: 5,222,823
 
-------- What is the total number of casual riders 
-------- and the total number of members? 
-
+------- what is the percentage of casual rides vs the percentage of total rides
+WITH total_rides AS(
+  SELECT 
+    ride_id
+  FROM cyclistic_capstone.clean_trips 
+)
 SELECT 
-  COUNT(*) AS num_casual_riders,
-  ROUND((COUNT(*) / 5275855)*100, 2) AS casual_percent  
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  member_casual = 'casual';
-
-SELECT 
-  COUNT(*) AS num_casual_riders,
-  ROUND((COUNT(*) / 5275855)*100, 2) AS casual_percent  
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  member_casual = 'member';
+  user_type,
+  COUNT(ride_id) AS rides_by_user, 
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) AS percent_by_user
+FROM cyclistic_capstone.clean_trips 
+GROUP BY user_type;
 /*
-the total number of casual riders was: 2,140,420
-or 40.57%
-the total number of member riders was: 3,135,435
-or 59.43%
+Where the total number of rides was: 5,222,823
+the total number of casual riders was: 2,121,434
+or 41%
+the total number of member riders was: 3,101,389
+or 59%
 */
 
 
-------- What percentage of the total rides was docked_type and e_type?
+------- What percentage of the total rides was docked_type and e_type for casual riders vs. member riders?
+WITH total_rides AS(
+  SELECT 
+    user_type,
+    ride_id, 
+    bike_type
+  FROM cyclistic_capstone.clean_trips
+) 
 SELECT 
-  COUNT(*) AS num_docked_type,
-  ROUND((COUNT(*) / 5275855)*100, 2) AS docked_type_percent
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  rideable_type = 'classic_bike' OR
-  rideable_type = 'docked_bike';
-
-SELECT 
-  COUNT(*) AS num_e_type,
-  ROUND((COUNT(*) / 5275855)*100, 2) AS e_type_percent
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  rideable_type = 'electric_bike';
-
-/*
-- the total number of docked_type rides was: 2,813,234 
-or 53.32% of the rides for the past year 
-- the total number of electric_bike rides was: 2,462,621 
-or 46.68% of the total rides for the past year
-*/
-
-
-------- What is the average total ride time and use as a baseline to compare tide_types? 
-SELECT 
-  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
-FROM cyclistic_capstone.trips_clean_final;
---avg total ride_time is: 16.8 minutes
-
-SELECT 
-  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  rideable_type = 'docked_bike' OR
-  rideable_type = 'classic_bike';
--- avg ride time for docked_type is: 19.3 minutes
-
-SELECT 
-  ROUND(AVG(ride_duration_in_min), 1) AS avg_ride_time
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  rideable_type = 'electric_bike';
--- avg ride time for e_type is: 13.8 minutes
-
-/*
-customers appear to be spending more time overall on docked_type bikes than e_type
-*/
-
-------- Which customers prefer e_type and which prefer docked_type? 
-SELECT 
-  member_casual,
-  rideable_type,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/5275855*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
+  user_type,
+  bike_type,
+  COUNT(ride_id) AS ride_count,
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) AS preference_percentage
+FROM total_rides
 GROUP BY 
-  member_casual,
-  rideable_type;
+  user_type,
+  bike_type
+ORDER BY 
+  user_type;
 /*
-casual members appear to be indifferent between docked_type and e_type
-In general, riders appear to prefer the docked_type bikes over the electric_type.
+casual riders appear to be indiffrent between electric-type and docked-type.
+members appear to prefer classic/docked bikes over electric
 */
+
+------- what is the annual breakdown of rides per month between casual riders and members. 
+WITH total_rides AS(
+  SELECT 
+    ride_id, 
+    month,
+    user_type
+  FROM cyclistic_capstone.clean_trips
+)
+SELECT 
+  user_type,
+  month, 
+  SUM(COUNT(ride_id))
+    OVER(PARTITION BY user_type) AS ride_count, 
+  COUNT(ride_id) AS num_ride_by_month,
+  (SELECT COUNT(ride_id) FROM total_rides) AS overall_total_rides,
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 3) AS percent_of_overall_total
+FROM cyclistic_capstone.clean_trips 
+GROUP BY 
+  user_type, 
+  month
+ORDER BY 
+  user_type, 
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 3) DESC;
+/*
+in general, ridership is higher during the summer months (May-Sep) for both members and casual riders. 
+though casual rides are significantly higher during summer months compared to the rest of the year.  
+*/
+
+
+------- what is the weekly breakdown of rides per day between casual riders and members. 
+WITH total_rides AS(
+  SELECT 
+    ride_id,
+    day_of_week, 
+    user_type
+  FROM cyclistic_capstone.clean_trips 
+)
+SELECT 
+  user_type, 
+  day_of_week, 
+  SUM(COUNT(ride_id)) 
+    OVER(PARTITION BY user_type) AS ride_count,
+  COUNT(ride_id) AS num_rides_by_day,
+  (SELECT COUNT(ride_id) FROM total_rides) AS overall_total_rides,
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) AS percent_of_overall_total
+FROM cyclistic_capstone.clean_trips 
+GROUP BY 
+  user_type, 
+  day_of_week
+ORDER BY 
+  user_type, 
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) DESC;
+/*
+within the timeline of the data: 
+57% of casual rides took place during the weekend Fri-Sun ranked from Sat, Sun, Fri.
+--inversely--
+61% of member rides took place during the work-week
+*/
+
+------- What is the weekly breakdown of average ride times per day compared to total average. 
+WITH total_rides AS(
+  SELECT 
+    user_type,
+    day_of_week,
+    ride_duration_in_min AS ride_time
+  FROM cyclistic_capstone.clean_trips 
+)
+SELECT 
+  user_type,
+  day_of_week,
+  ROUND(AVG(ride_time)) AS avg_ride_time,
+  AVG(AVG(ride_time)) 
+    OVER(PARTITION BY user_type)
+FROM total_rides
+GROUP BY 
+  day_of_week, 
+  user_type;
+/*
+total average ride time (approx): 
+casual: 23 minutes
+member: 13 minutes
+both members members and casual riders appear to have above-average ride times on weekends. 
+*/
+
 
 ---------------------------------------------------------------------------------
 
-------- What is the weekly breakdown between members and casual riders? 
-
--- Where the total rides was: 5,275,855
-SELECT 
-  day_of_week,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/5275855*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
-GROUP BY 
-  day_of_week
-ORDER BY 
-  ROUND((COUNT(ride_id)/5275855*100), 2) DESC;
-/*
-total ridership is fairly consistent throughout the week 
-although Wednesday - Saturday appear to be slightly more busy. 
-*/
-
-
--- Where the total member rides was: 3,135,435
-SELECT 
-  day_of_week,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/3135435*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
-WHERE member_casual = 'member'
-GROUP BY 
-  day_of_week
-ORDER BY 
-  ROUND((COUNT(ride_id)/3135435*100), 2) DESC;
-
-SELECT 
-  day_of_week,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/2140420*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
-WHERE member_casual = 'casual'
-GROUP BY 
-  day_of_week
-ORDER BY 
-  ROUND((COUNT(ride_id)/2140420*100), 2) DESC;
-
-/*
-- The busiest days for casual riders is Friday, Saturday, & Sunday
-- The busiest days for members is Monday - Thursday but member ridership remains 
-fairly consistent throughout the week. 
-*/
-
-------- what is the monthly breakdown for casual riders? 
-SELECT 
-  month,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/2140420*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
-WHERE member_casual = 'casual'
-GROUP BY 
-  month
-ORDER BY 
-  ROUND((COUNT(ride_id)/2140420*100), 2) DESC;
-
-SELECT 
-  month,
-  COUNT(ride_id) AS total_count,
-  ROUND((COUNT(ride_id)/3135435*100), 2) AS percentage
-FROM cyclistic_capstone.trips_clean_final
-WHERE member_casual = 'casual'
-GROUP BY 
-  month
-ORDER BY 
-  ROUND((COUNT(ride_id)/3135435*100), 2) DESC;
-
-/*
-The most active months for members are May - September
-The most active months for casual riders are also May - September
-ie: ridership in general tends to be higher during the summer time
-*/
 
 ------- Which start/end stations are the most common for casual riders? 
+WITH start_stations AS(
+  SELECT 
+    user_type,
+    start_station_name, 
+    ride_id
+  FROM cyclistic_capstone.clean_trips 
+)
 SELECT 
-  start_station_name AS most_common_starting_point,
+  user_type,
+  DENSE_RANK() 
+    OVER(PARTITION BY user_type ORDER BY COUNT(ride_id) DESC) AS station_rank,
+  start_station_name,
   COUNT(ride_id) AS ride_count
-FROM cyclistic_capstone.trips_clean_final
+FROM start_stations
 WHERE 
-  member_casual = 'casual' AND
+  user_type = 'casual' AND 
   start_station_name IS NOT NULL
-GROUP BY start_station_name
-ORDER BY COUNT(ride_id) DESC
-LIMIT 15;
-
-SELECT 
-  end_station_name AS most_common_destinations,
-  COUNT(ride_id) AS ride_count
-FROM cyclistic_capstone.trips_clean_final
-WHERE 
-  member_casual = 'casual' AND
-  end_station_name IS NOT NULL
-GROUP BY end_station_name
-ORDER BY COUNT(ride_id) DESC
-LIMIT 15;
-
+GROUP BY 
+  user_type,
+  start_station_name; 
 /*
-The top 15 common start/end locations for casual riders are: 
+The top 20 most-used starting locations for casual riders are: 
 1. Streeter Dr. & Grand Ave.
 2. Dusable Lake Shore Dr. & Monroe St.
 3. Millenium Park
@@ -218,4 +177,56 @@ The top 15 common start/end locations for casual riders are:
 13. Clark St. & Elm
 14. Wells St. & Elm 
 15. Montrose Harbor
+16. Broadway & Barry Ave. 
+17. Clark St. & Newport St. 
+18. Wabash Ave & Grand Ave
+19. Wilton Ave & Belmont Ave
+20. Michigane Ave & 8th St. 
 */
+
+WITH end_stations AS(
+  SELECT 
+    user_type,
+    end_station_name, 
+    ride_id
+  FROM cyclistic_capstone.clean_trips 
+)
+SELECT 
+  user_type,
+  DENSE_RANK() 
+    OVER(PARTITION BY user_type ORDER BY COUNT(ride_id) DESC) AS station_rank,
+  end_station_name,
+  COUNT(ride_id) AS ride_count
+FROM end_stations
+WHERE 
+  user_type = 'casual' AND 
+  end_station_name IS NOT NULL
+GROUP BY 
+  user_type,
+  end_station_name 
+/*
+Top 20 most-common destinations for casual riders are: 
+1. Streeter Dr. & Grand Ave
+2. DuSable Lake Shore Dr. & Monroe St. 
+3. Millenium Park
+4. Michigan Ave & Oak St. 
+5. Dusable Lake Shore Dr & North Blvd
+6. Theater on the Lake
+7. Shedd Aquarium
+8. Wells St. & Concord Ln
+9. Clark St. & Armitage Ave
+10. Clark St. & Lincoln Ave 
+11. Dusable Harbor
+12. Indiana Ave & Roosevelt Rd. 
+13. Clark St. & Elm St.
+14. Montrose Harbor
+15. Wabash Ave & Grand Ave
+16. Clark St. & Newport St.
+17. Braodway & Barry Ave
+18. Sheffield Ave & Waveland Ave
+19. Wells St. & Elm st. 
+20. Michigan Ave & Washington St
+*/
+
+
+
