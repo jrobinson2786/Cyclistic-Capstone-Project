@@ -20,10 +20,8 @@ FROM cyclistic_capstone.clean_trips
 GROUP BY user_type;
 /*
 Where the total number of rides was: 5,222,823
-the total number of casual riders was: 2,121,434
-or 41%
-the total number of member riders was: 3,101,389
-or 59%
+the total number of casual riders was: 2,121,434 or 41% of total riders.
+the total number of member riders was: 3,101,389 or 59% of total riders.
 */
 
 
@@ -51,7 +49,7 @@ casual riders appear to be indiffrent between electric-type and docked-type.
 members appear to prefer classic/docked bikes over electric
 */
 
-------- what is the annual breakdown of rides per month between casual riders and members. 
+------- what is the annual breakdown of rides per month between casual riders and members? 
 WITH total_rides AS(
   SELECT 
     ride_id, 
@@ -80,7 +78,7 @@ though casual rides are significantly higher during summer months compared to th
 */
 
 
-------- what is the weekly breakdown of rides per day between casual riders and members. 
+------- what is the weekly breakdown of rides per day between casual riders and members?
 WITH total_rides AS(
   SELECT 
     ride_id,
@@ -110,7 +108,7 @@ within the timeline of the data:
 61% of member rides took place during the work-week
 */
 
-------- What is the weekly breakdown of average ride times per day compared to total average. 
+------- What is the weekly breakdown of average ride times per day compared to total average?
 WITH total_rides AS(
   SELECT 
     user_type,
@@ -135,8 +133,6 @@ member: 13 minutes
 both members members and casual riders appear to have above-average ride times on weekends. 
 */
 
-
----------------------------------------------------------------------------------
 
 
 ------- Which start/end stations are the most common for casual riders? 
