@@ -165,12 +165,12 @@ The top 20 most-used starting locations for casual riders are:
 3. Millenium Park
 4. Michigan Ave & Oak Street
 5. Dusable Lake Shore Dr & North Blvd. 
-6. Shedd Acquarium
+6. Shedd Aquarium
 7. Wells St. & Concord
 8. Theater on The Lake
 9. Dusable Harbor 
 10. Clark St. & Armitage Ave. 
-11. Indiana Ave & Roosavelt Road
+11. Indiana Ave & Roosevelt Road
 12. Clark St. & Lincoln Ave. 
 13. Clark St. & Elm
 14. Wells St. & Elm 
@@ -179,7 +179,7 @@ The top 20 most-used starting locations for casual riders are:
 17. Clark St. & Newport St. 
 18. Wabash Ave & Grand Ave
 19. Wilton Ave & Belmont Ave
-20. Michigane Ave & 8th St. 
+20. Michigan Ave & 8th St. 
 */
 
 WITH end_stations AS(
@@ -220,7 +220,7 @@ Top 20 most-common destinations for casual riders are:
 14. Montrose Harbor
 15. Wabash Ave & Grand Ave
 16. Clark St. & Newport St.
-17. Braodway & Barry Ave
+17. Broadway & Barry Ave
 18. Sheffield Ave & Waveland Ave
 19. Wells St. & Elm st. 
 20. Michigan Ave & Washington St
