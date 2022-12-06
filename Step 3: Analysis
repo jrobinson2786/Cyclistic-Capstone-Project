@@ -26,7 +26,6 @@ the total number of casual riders was: 2,121,434 or 41% of total riders.
 the total number of member riders was: 3,101,389 or 59% of total riders.
 */
 
-
 ------- What percentage of the total rides was docked_type and e_type for casual riders vs. member riders?
 WITH total_rides AS(
   SELECT 
@@ -78,7 +77,6 @@ ORDER BY
 in general, ridership is higher during the summer months (May-Sep) for both members and casual riders. 
 though casual rides are significantly higher during summer months compared to the rest of the year.  
 */
-
 
 ------- what is the weekly breakdown of rides per day between casual riders and members?
 WITH total_rides AS(
@@ -134,8 +132,6 @@ casual: 23 minutes
 member: 13 minutes
 both members members and casual riders appear to have above-average ride times on weekends. 
 */
-
-
 
 ------- Which start/end stations are the most common for casual riders? 
 WITH start_stations AS(
