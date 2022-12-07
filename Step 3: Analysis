@@ -133,6 +133,59 @@ member: 13 minutes
 both members members and casual riders appear to have above-average ride times on weekends. 
 */
 
+
+------- What time of day are to casual riders tend to ride? 
+WITH start_time AS(
+  SELECT 
+    user_type,
+    ride_id,
+    started_at,
+    CASE
+      WHEN started_at BETWEEN '17:00:00' AND '23:59:00' THEN 'evening'
+      WHEN started_at BETWEEN '00:00:00' AND '03:59:00' THEN 'evening'
+      WHEN started_at BETWEEN '04:00:00' AND '11:59:00' THEN 'morning'
+      WHEN started_at BETWEEN '12:00:00' AND '16:59:00' THEN 'afternoon'
+    END AS time_of_day,
+    day_of_week,
+    bike_type,
+    ride_duration_in_min    
+  FROM cyclistic_capstone.clean_trips   
+),
+breakdown_by_num_ride AS(
+SELECT 
+  user_type,
+  time_of_day,
+  COUNT(ride_id) AS ride_count
+FROM start_time
+GROUP BY 
+  time_of_day,
+  user_type
+ORDER BY 
+  user_type, 
+  COUNT(ride_id) DESC
+)
+------- and the breakdown in average ride time for the time of day? 
+SELECT 
+  user_type,
+  time_of_day,
+  AVG(AVG(ride_duration_in_min))
+    OVER(PARTITION BY user_type ORDER BY time_of_day) AS avg_ride_time
+FROM ride_time
+GROUP BY 
+  user_type,
+  time_of_day
+/*
+where the time of day broken into 3 distnct (and equal) 8-hour timeframes, 
+encompassing mornings, afternoons, and evenings. 
+
+casual riders appear to be riding more in the evenings 
+(ie: between the hours of 5pm and 3am)
+but they also appear to be riding longer during the afternoons
+(ie: between the hours of 12-noon and 4pm)
+*/
+
+
+
 ------- Which start/end stations are the most common for casual riders? 
 WITH start_stations AS(
   SELECT 
