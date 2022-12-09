@@ -1,6 +1,6 @@
--------------------------------------------------------------------
-------------------------------Analysis-----------------------------
--------------------------------------------------------------------
+------------------------------------------------------------------------------------
+------------------------------------Analysis----------------------------------------
+------------------------------------------------------------------------------------
 
 ------- What is the new total number of rides compared to the old?
 SELECT 
@@ -45,9 +45,11 @@ GROUP BY
   user_type,
   bike_type
 ORDER BY 
-  user_type;
+  user_type,
+  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) DESC;
 /*
-both casual riders as well as members appear to be more inclined to ride electric bikes over docked and classic bikes. 
+casual riders appear to prefer electric bikes over docked-type bikes while 
+members seem to prefer classic/docked bikes over electric
 */
 
 ------- what is the annual breakdown of rides per month between casual riders and members? 
