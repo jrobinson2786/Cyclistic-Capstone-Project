@@ -47,8 +47,7 @@ GROUP BY
 ORDER BY 
   user_type;
 /*
-casual riders appear to be indiffrent between electric-type and docked-type.
-members appear to prefer classic/docked bikes over electric
+both casual riders as well as members appear to be more inclined to ride electric bikes over docked and classic bikes. 
 */
 
 ------- what is the annual breakdown of rides per month between casual riders and members? 
