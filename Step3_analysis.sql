@@ -48,7 +48,7 @@ ORDER BY
   user_type,
   ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) DESC;
 /*
-casual riders appear to prefer electric bikes over docked-type bikes while 
+casual riders appear to be indifferent between electric bikes and docked-type bikes while 
 members seem to prefer classic/docked bikes over electric
 */
 
