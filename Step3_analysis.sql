@@ -27,26 +27,34 @@ the total number of casual riders was: 2,121,434 or 41% of total riders.
 the total number of member riders was: 3,101,389 or 59% of total riders.
 */
 
-------- What percentage of the total rides was docked_type and e_type for casual riders vs. member riders?
-WITH total_rides AS(
+------- What is the percentage of docked_type and e_type for casual riders vs. member riders?
+WITH member_rides AS(
   SELECT 
-    user_type,
     ride_id, 
+    user_type, 
     bike_type
-  FROM cyclistic_capstone.clean_trips
-) 
+  FROM cyclistic_capstone.clean_trips 
+  WHERE user_type = 'member'
+),
+casual_rides AS(
+  SELECT 
+    ride_id, 
+    user_type, 
+    bike_type
+  FROM cyclistic_capstone.clean_trips 
+  WHERE user_type = 'member'
+)
 SELECT 
   user_type,
   bike_type,
   COUNT(ride_id) AS ride_count,
-  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) AS preference_percentage
-FROM total_rides
+  ROUND(COUNT(*) / (SELECT COUNT(*) FROM member_rides)*100, 0) AS percentage_breakdown
+FROM member_rides
 GROUP BY 
-  user_type,
+  user_type, 
   bike_type
-ORDER BY 
-  user_type,
-  ROUND(COUNT(ride_id) / (SELECT COUNT(ride_id) FROM total_rides)*100, 0) DESC;
+ORDER BY
+  ROUND(COUNT(*) / (SELECT COUNT(*) FROM member_rides)*100, 0) DESC
 /*
 casual riders appear to be indifferent between electric bikes and docked/classic-type bikes while 
 members seem to prefer classic/docked bikes over electric
