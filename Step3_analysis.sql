@@ -88,6 +88,33 @@ in general, ridership is higher during the summer months (May-Sep) for both memb
 though casual rides are significantly higher during summer months compared to the rest of the year.  
 */
 
+
+------- What is the breakdown of average ride time by user & type?
+WITH ride_time AS(
+  SELECT
+    user_type, 
+    bike_type,
+    ride_duration_in_min
+  FROM cyclistic_capstone.clean_trips
+)
+SELECT 
+  user_type,
+  bike_type,
+  ROUND(AVG(ride_duration_in_min), 0) AS avg_time_by_type,
+  AVG(AVG(ride_duration_in_min))
+    OVER(PARTITION BY user_type ORDER BY user_type) AS avg_by_user_type
+FROM ride_time
+GROUP BY 
+  user_type,
+  bike_type
+ORDER BY 
+  user_type,
+  ROUND(AVG(ride_duration_in_min), 0) DESC
+/*
+both casual riders and member ride classic bikes for longer periods of time. 
+*/
+
+
 ------- what is the weekly breakdown of rides per day between casual riders and members?
 WITH total_rides AS(
   SELECT 
