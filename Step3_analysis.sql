@@ -190,11 +190,11 @@ WITH start_time AS(
     ride_duration_in_min    
   FROM cyclistic_capstone.clean_trips   
 ),
-breakdown_by_num_ride AS(
+rides_at_tod AS(
 SELECT 
   user_type,
   time_of_day,
-  COUNT(ride_id) AS ride_count
+  COUNT(ride_id) AS ride_count,
 FROM start_time
 GROUP BY 
   time_of_day,
@@ -203,16 +203,20 @@ ORDER BY
   user_type, 
   COUNT(ride_id) DESC
 )
-------- and the breakdown in average ride time for the time of day? 
+------- what is the average ride duration by time of day?
 SELECT 
   user_type,
   time_of_day,
+  AVG(ride_duration_in_min) AS avg_time_by_user_type,
   AVG(AVG(ride_duration_in_min))
-    OVER(PARTITION BY user_type ORDER BY time_of_day) AS avg_ride_time
-FROM ride_time
+    OVER(PARTITION BY user_type)
+FROM start_time
 GROUP BY 
-  user_type,
-  time_of_day
+  time_of_day,
+  user_type
+ORDER BY 
+  user_type, 
+  COUNT(ride_id) DESC
 /*
 where the time of day broken into 3 distnct (and equal) 8-hour timeframes, 
 encompassing mornings, afternoons, and evenings. 
