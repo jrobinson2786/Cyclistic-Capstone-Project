@@ -172,7 +172,7 @@ member: 13 minutes
 both members members and casual riders appear to have above-average ride times on weekends. 
 */
 
-
+------- time of day (tod)
 ------- What time of day are to casual riders tend to ride? 
 WITH start_time AS(
   SELECT 
@@ -203,13 +203,13 @@ ORDER BY
   user_type, 
   COUNT(ride_id) DESC
 )
-------- what is the average ride duration by time of day?
+------- what is the avg ride duration at tod?
 SELECT 
   user_type,
   time_of_day,
-  AVG(ride_duration_in_min) AS avg_time_by_user_type,
+  AVG(ride_duration_in_min) AS avg_time_at_tod,
   AVG(AVG(ride_duration_in_min))
-    OVER(PARTITION BY user_type)
+    OVER(PARTITION BY user_type) AS avg_ride_time_by_type
 FROM start_time
 GROUP BY 
   time_of_day,
@@ -217,13 +217,13 @@ GROUP BY
 ORDER BY 
   user_type, 
   COUNT(ride_id) DESC
+
 /*
 where the time of day broken into 3 distnct (and equal) 8-hour timeframes, 
 encompassing mornings, afternoons, and evenings. 
-casual riders appear to be riding more in the evenings 
+more casual riders appear to be riding more in the evenings 
 (ie: between the hours of 5pm and 3am)
-but they also appear to be riding longer during the afternoons
-(ie: between the hours of 12-noon and 4pm)
+there is no significant deviation in the average ride times throughout the day. 
 */
 
 
