@@ -12,5 +12,5 @@ It has been determined by the financial analytics team that annual members are m
 * Link to [Tableau](https://public.tableau.com/app/profile/jack.robinson5140)
 * The data for this project is based on Chicago's Divvy Bikes which has been made available and can be found [here](https://divvy-tripdata.s3.amazonaws.com/index.html)
 * The data has been made available by Motivate Intl. Inc. Under this [License](https://ride.divvybikes.com/data-license-agreement)
-* Full project and portfolio coming soon... 
+* Find the complete analysis [here](https://medium.com/@jackjoerobinson/cyclistic-bikeshare-market-analysis-58d0ce29e757)
 
